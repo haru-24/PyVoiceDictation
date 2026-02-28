@@ -1,50 +1,59 @@
 """
 アプリケーション設定
 """
+
+import json
 import os
 import sys
-import json
 import threading
 from pathlib import Path
-from pydantic import BaseModel, Field, field_validator, PrivateAttr
-from pynput.keyboard import Key
-from dotenv import load_dotenv
 
-# 環境変数を読み込み（バンドル時は Application Support の .env も参照）
-_env_path = (
-    Path.home() / "Library" / "Application Support" / "stt-python" / ".env"
-    if getattr(sys, 'frozen', False)
-    else None
-)
-load_dotenv(_env_path)
+from dotenv import load_dotenv, set_key
+from pydantic import BaseModel, Field, PrivateAttr, field_validator
+from pynput.keyboard import Key
+
+
+def _get_env_path() -> Path:
+    """API キーの保存先 .env パスを返す"""
+    if getattr(sys, "frozen", False):
+        return Path.home() / "Library" / "Application Support" / "stt-python" / ".env"
+    return Path(__file__).parent.parent / "__generated__" / ".env"
+
+
+# 起動時に .env を読み込む
+load_dotenv(_get_env_path())
 
 
 def _get_user_data_dir() -> Path:
     """バンドル時は Application Support、開発時は __generated__ を返す"""
-    if getattr(sys, 'frozen', False):
+    if getattr(sys, "frozen", False):
         return Path.home() / "Library" / "Application Support" / "stt-python"
     return Path(__file__).parent.parent / "__generated__"
 
 
 def _get_config_dir() -> Path:
     """バンドル時は Application Support、開発時は config/ を返す"""
-    if getattr(sys, 'frozen', False):
+    if getattr(sys, "frozen", False):
         return Path.home() / "Library" / "Application Support" / "stt-python"
     return Path(__file__).parent.parent / "config"
 
+
 # デフォルトのフォールバックプロンプト（prompts.jsonが読めない場合のみ使用）
-_FALLBACK_PROMPT = "以下のテキストを補正してください。補正後のテキストのみを出力してください：\n{text}"
+_FALLBACK_PROMPT = (
+    "以下のテキストを補正してください。補正後のテキストのみを出力してください：\n{text}"
+)
 
 
 class AppConfig(BaseModel):
     """アプリケーション設定"""
+
     hotkey: Key = Field(default=Key.cmd_r, description="録音用ホットキー")
     sample_rate: int = Field(default=16000, ge=8000, le=48000, description="サンプリングレート")
 
     # STT バックエンド設定
     stt_backend: str = Field(
         default_factory=lambda: os.getenv("STT_BACKEND", "google"),
-        description="STTバックエンド (whisper|google)"
+        description="STTバックエンド (whisper|google)",
     )
 
     # Whisper 設定
@@ -60,30 +69,23 @@ class AppConfig(BaseModel):
 
     # Gemini API 設定
     gemini_api_key: str = Field(
-        default_factory=lambda: os.getenv("GEMINI_API_KEY", ""),
-        description="Gemini API キー"
+        default_factory=lambda: os.getenv("GEMINI_API_KEY", ""), description="Gemini API キー"
     )
     gemini_model: str = Field(
         default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-2.0-flash-exp"),
-        description="使用するGeminiモデル"
+        description="使用するGeminiモデル",
     )
-    gemini_timeout: int = Field(
-        default=5,
-        ge=1,
-        le=30,
-        description="APIタイムアウト時間（秒）"
-    )
+    gemini_timeout: int = Field(default=5, ge=1, le=30, description="APIタイムアウト時間（秒）")
     gemini_prompt_file: Path = Field(
         default_factory=lambda: _get_user_data_dir() / "prompts.json",
-        description="プロンプト設定ファイルパス"
+        description="プロンプト設定ファイルパス",
     )
     gemini_prompt: str = Field(default="", description="Gemini補正プロンプト")
 
     # サウンド設定
     sound_enabled: bool = Field(default=True, description="サウンド再生の有効/無効")
     settings_file: Path = Field(
-        default_factory=lambda: _get_config_dir() / "settings.json",
-        description="設定ファイルパス"
+        default_factory=lambda: _get_config_dir() / "settings.json", description="設定ファイルパス"
     )
 
     # プライベート属性
@@ -91,8 +93,8 @@ class AppConfig(BaseModel):
 
     @property
     def gemini_enabled(self) -> bool:
-        """Gemini補正機能の有効/無効（APIキーが設定されていれば自動的に有効）"""
-        return bool(self.gemini_api_key)
+        """Gemini補正機能の有効/無効（APIキーとモデルが両方設定されていれば有効）"""
+        return bool(self.gemini_api_key) and bool(self.gemini_model)
 
     @field_validator("stt_backend")
     @classmethod
@@ -132,10 +134,7 @@ class AppConfig(BaseModel):
 
     def _save_default_prompt(self) -> None:
         """デフォルトプロンプトをJSONに保存"""
-        data = {
-            "current_prompt": _FALLBACK_PROMPT,
-            "default_prompt": _FALLBACK_PROMPT
-        }
+        data = {"current_prompt": _FALLBACK_PROMPT, "default_prompt": _FALLBACK_PROMPT}
         with open(self.gemini_prompt_file, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
@@ -186,7 +185,7 @@ class AppConfig(BaseModel):
         """設定をJSONに保存"""
         data = {
             "sound_enabled": self.sound_enabled,
-            "version": "1.0"
+            "version": "1.0",
         }
         with open(self.settings_file, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -196,6 +195,16 @@ class AppConfig(BaseModel):
         with self._lock:
             self.sound_enabled = enabled
             self._save_settings()
+
+    def save_gemini_settings(self, api_key: str, model: str) -> None:
+        """Gemini API設定を .env に保存してリロード（スレッドセーフ）"""
+        with self._lock:
+            self.gemini_api_key = api_key.strip()
+            self.gemini_model = model.strip()
+            env_path = _get_env_path()
+            env_path.parent.mkdir(parents=True, exist_ok=True)
+            set_key(str(env_path), "GEMINI_API_KEY", self.gemini_api_key)
+            set_key(str(env_path), "GEMINI_MODEL", self.gemini_model)
 
     class Config:
         arbitrary_types_allowed = True

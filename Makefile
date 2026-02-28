@@ -1,4 +1,4 @@
-APP_NAME = STT音声入力
+APP_NAME = PyVoDictation
 
 .PHONY: build dist clean dev
 
