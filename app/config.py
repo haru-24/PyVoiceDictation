@@ -2,6 +2,7 @@
 アプリケーション設定
 """
 import os
+import sys
 import json
 import threading
 from pathlib import Path
@@ -9,8 +10,27 @@ from pydantic import BaseModel, Field, field_validator, PrivateAttr
 from pynput.keyboard import Key
 from dotenv import load_dotenv
 
-# 環境変数を読み込み
-load_dotenv()
+# 環境変数を読み込み（バンドル時は Application Support の .env も参照）
+_env_path = (
+    Path.home() / "Library" / "Application Support" / "stt-python" / ".env"
+    if getattr(sys, 'frozen', False)
+    else None
+)
+load_dotenv(_env_path)
+
+
+def _get_user_data_dir() -> Path:
+    """バンドル時は Application Support、開発時は __generated__ を返す"""
+    if getattr(sys, 'frozen', False):
+        return Path.home() / "Library" / "Application Support" / "stt-python"
+    return Path(__file__).parent.parent / "__generated__"
+
+
+def _get_config_dir() -> Path:
+    """バンドル時は Application Support、開発時は config/ を返す"""
+    if getattr(sys, 'frozen', False):
+        return Path.home() / "Library" / "Application Support" / "stt-python"
+    return Path(__file__).parent.parent / "config"
 
 # デフォルトのフォールバックプロンプト（prompts.jsonが読めない場合のみ使用）
 _FALLBACK_PROMPT = "以下のテキストを補正してください。補正後のテキストのみを出力してください：\n{text}"
@@ -54,7 +74,7 @@ class AppConfig(BaseModel):
         description="APIタイムアウト時間（秒）"
     )
     gemini_prompt_file: Path = Field(
-        default=Path(__file__).parent.parent / "__generated__" / "prompts.json",
+        default_factory=lambda: _get_user_data_dir() / "prompts.json",
         description="プロンプト設定ファイルパス"
     )
     gemini_prompt: str = Field(default="", description="Gemini補正プロンプト")
@@ -62,7 +82,7 @@ class AppConfig(BaseModel):
     # サウンド設定
     sound_enabled: bool = Field(default=True, description="サウンド再生の有効/無効")
     settings_file: Path = Field(
-        default=Path(__file__).parent.parent / "config" / "settings.json",
+        default_factory=lambda: _get_config_dir() / "settings.json",
         description="設定ファイルパス"
     )
 

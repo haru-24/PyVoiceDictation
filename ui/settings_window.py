@@ -1,6 +1,7 @@
 """
 設定ウィンドウUI（統合版）
 """
+
 from pathlib import Path
 
 from PyQt6.QtCore import Qt
@@ -13,9 +14,9 @@ from PyQt6.QtWidgets import (
     QLabel,
     QMessageBox,
     QPushButton,
-    QTabWidget,
     QTableWidget,
     QTableWidgetItem,
+    QTabWidget,
     QTextEdit,
     QVBoxLayout,
     QWidget,
@@ -33,7 +34,7 @@ class SettingsDialog(QDialog):
 
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle("🥷🏻 音声入力設定")
+        self.setWindowTitle("🎤🏻 音声入力設定")
         self.setMinimumSize(900, 700)
         self._setup_ui()
 
@@ -471,7 +472,7 @@ class SettingsDialog(QDialog):
         reply = QMessageBox.question(
             self,
             "確認",
-            "プロンプトをデフォルトに戻しますか？\n\n" "現在の内容は失われます。",
+            "プロンプトをデフォルトに戻しますか？\n\n現在の内容は失われます。",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
@@ -562,7 +563,7 @@ class SettingsDialog(QDialog):
         reply = QMessageBox.question(
             self,
             "確認",
-            "ログファイルをクリアしますか？\n\n" "この操作は元に戻せません。",
+            "ログファイルをクリアしますか？\n\nこの操作は元に戻せません。",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )

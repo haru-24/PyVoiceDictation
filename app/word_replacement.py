@@ -2,11 +2,17 @@
 ワードリプレイスメント（音声認識後のテキスト変換）
 """
 import csv
+import sys
 import threading
 from pathlib import Path
 from typing import List, Tuple
 
-CSV_PATH = Path(__file__).parent.parent / "__generated__" / "word_replacement.csv"
+
+def _get_csv_path() -> Path:
+    """バンドル時は Application Support、開発時は __generated__ を返す"""
+    if getattr(sys, 'frozen', False):
+        return Path.home() / "Library" / "Application Support" / "stt-python" / "word_replacement.csv"
+    return Path(__file__).parent.parent / "__generated__" / "word_replacement.csv"
 
 
 class WordReplacementManager:
@@ -15,7 +21,8 @@ class WordReplacementManager:
     def __init__(self) -> None:
         self._rules: List[Tuple[str, str]] = []
         self._lock = threading.Lock()
-        if CSV_PATH.exists():
+        csv_path = _get_csv_path()
+        if csv_path.exists():
             self._load_csv()
         else:
             self.save_csv()
@@ -24,7 +31,7 @@ class WordReplacementManager:
         """CSVファイルからルールを読み込む（input,output 形式）"""
         rules: List[Tuple[str, str]] = []
         try:
-            with open(CSV_PATH, "r", encoding="utf-8", newline="") as f:
+            with open(_get_csv_path(), "r", encoding="utf-8", newline="") as f:
                 reader = csv.DictReader(f)
                 for row in reader:
                     input_word = row.get("input", "").strip()
@@ -56,10 +63,11 @@ class WordReplacementManager:
 
     def save_csv(self) -> None:
         """config/word_replacement.csv にルールを保存する"""
-        CSV_PATH.parent.mkdir(parents=True, exist_ok=True)
+        csv_path = _get_csv_path()
+        csv_path.parent.mkdir(parents=True, exist_ok=True)
         with self._lock:
             rules = list(self._rules)
-        with open(CSV_PATH, "w", encoding="utf-8", newline="") as f:
+        with open(csv_path, "w", encoding="utf-8", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(["input", "output"])
             for input_word, output_word in rules:

@@ -13,18 +13,18 @@ macOSの設定:
 
 使い方:
     python main.py
-    → メニューバーに🥷🏻アイコンが表示される
+    → メニューバーに🎤🏻アイコンが表示される
     → 右Commandキーを押しながら話す → 離すとテキスト入力
 """
 
 import time
 
 from app.config import config
-from app.whisper import WhisperTranscriber
-from app.google_speech import GoogleSpeechTranscriber
-from app.gemini import GeminiCorrector
 from app.engine import VoiceInputEngine
+from app.gemini import GeminiCorrector
+from app.google_speech import GoogleSpeechTranscriber
 from app.settings import SettingsWindow
+from app.whisper import WhisperTranscriber
 
 # rumpsのインポート試行
 try:
@@ -32,11 +32,12 @@ try:
 
     class VoiceInputApp(rumps.App):
         """メニューバーUI"""
+
         _status_item: rumps.MenuItem
         _sound_item: rumps.MenuItem
 
         def __init__(self) -> None:
-            super().__init__("🥷🏻", quit_button="終了")
+            super().__init__("🎤🏻", quit_button="終了")
             self._status_item = rumps.MenuItem("待機中...")
             # STTバックエンド表示
             if config.stt_backend == "google":
@@ -69,7 +70,7 @@ try:
             self._status_item.title = "👨🏻‍💻 変換中..."
 
         def set_idle(self) -> None:
-            self.title = "🥷🏻"
+            self.title = "🎤🏻"
             self._status_item.title = "待機中..."
 
         def set_error(self, msg: str) -> None:
@@ -99,7 +100,7 @@ def main() -> None:
     """メイン関数"""
     # STTバックエンドの選択
     if config.stt_backend == "google":
-        print(f"[STT] Google Speech Recognition を使用")
+        print("[STT] Google Speech Recognition を使用")
         transcriber = GoogleSpeechTranscriber()
     else:
         print(f"[STT] Whisper ({config.whisper_model}) を使用")
@@ -122,6 +123,7 @@ def main() -> None:
                 time.sleep(1)
         except KeyboardInterrupt:
             pass
+
 
 if __name__ == "__main__":
     main()
