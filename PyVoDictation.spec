@@ -72,7 +72,6 @@ app = BUNDLE(
     icon='assets/icon.icns',
     bundle_identifier='com.local.pyo-vo-dictation',
     info_plist={
-        'LSUIElement': True,  # Dockに表示しない（メニューバーアプリ）
         'CFBundleName': 'PyVoDictation',
         'CFBundleDisplayName': 'PyVoDictation',
         'CFBundleVersion': '1.0.0',

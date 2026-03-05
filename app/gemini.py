@@ -57,7 +57,6 @@ class GeminiCorrector:
                 config=types.GenerateContentConfig(
                     temperature=0.3,
                     max_output_tokens=500,
-                    http_options=types.HttpOptions(timeout=config.gemini_timeout * 1000),
                 )
             )
 
