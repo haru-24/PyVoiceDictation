@@ -1,8 +1,9 @@
 """
 設定ウィンドウ管理（薄いラッパー）
 """
-import sys
+
 import multiprocessing
+import sys
 from typing import Optional
 
 from PyQt6.QtWidgets import QApplication
@@ -33,9 +34,7 @@ class SettingsWindow:
 
         self._is_open = True
         # 別プロセスでGUIを実行
-        self._window_process = multiprocessing.Process(
-            target=_run_settings_window, daemon=True
-        )
+        self._window_process = multiprocessing.Process(target=_run_settings_window, daemon=True)
         self._window_process.start()
 
 

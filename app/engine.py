@@ -1,13 +1,13 @@
 """
 音声入力エンジン（録音・文字起こし・テキスト入力の統合制御）
 """
+
 import logging
 import subprocess
 import threading
 import time
-from datetime import datetime
 from pathlib import Path
-from typing import Optional, List, Any
+from typing import Any, List, Optional
 
 import numpy as np
 import numpy.typing as npt
@@ -22,8 +22,8 @@ from Quartz.CoreGraphics import (
 )
 
 from app.config import config
-from app.google_speech import GoogleSpeechTranscriber
 from app.gemini import GeminiCorrector
+from app.google_speech import GoogleSpeechTranscriber
 from app.word_replacement import word_replacer
 
 # ログディレクトリとファイル設定
@@ -109,6 +109,7 @@ class VoiceInputEngine:
 
     def start_keyboard_listener(self) -> keyboard.Listener:
         """キーボードリスナーを起動"""
+
         def on_press(key: Key | KeyCode | None) -> None:
             if key == config.hotkey:
                 self.start_recording()
@@ -124,6 +125,7 @@ class VoiceInputEngine:
 
     def _create_audio_stream(self) -> sd.InputStream:
         """オーディオストリームを作成"""
+
         def audio_callback(
             indata: npt.NDArray[np.float32],
             _frames: int,
@@ -184,9 +186,7 @@ class VoiceInputEngine:
                 self.app.set_idle()
             return
 
-        threading.Thread(
-            target=self._transcribe_and_type, args=(audio,), daemon=True
-        ).start()
+        threading.Thread(target=self._transcribe_and_type, args=(audio,), daemon=True).start()
 
     def _transcribe_and_type(self, audio: npt.NDArray[np.float32]) -> None:
         """音声を文字起こしして入力"""

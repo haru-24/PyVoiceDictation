@@ -16,6 +16,8 @@ a = Analysis(
     binaries=[],
     datas=[
         (os.path.join(_pkg_dir('speech_recognition'), 'flac-mac'), 'speech_recognition'),
+        ('assets/menubar.png', 'assets'),
+        ('assets/menubar@2x.png', 'assets'),
     ],
     hiddenimports=[
         'app',
@@ -67,7 +69,7 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name='PyVoDictation.app',
-    icon=None,  # アイコンがあれば 'assets/icon.icns' に設定
+    icon='assets/icon.icns',
     bundle_identifier='com.local.pyo-vo-dictation',
     info_plist={
         'LSUIElement': True,  # Dockに表示しない（メニューバーアプリ）

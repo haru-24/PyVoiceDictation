@@ -15,13 +15,25 @@ macOSの設定:
 """
 
 import multiprocessing
+import sys
 import time
+from pathlib import Path
 
 from app.config import config
 from app.engine import VoiceInputEngine
 from app.gemini import GeminiCorrector
 from app.google_speech import GoogleSpeechTranscriber
 from app.settings import SettingsWindow
+
+
+def _menubar_icon_path() -> str:
+    """メニューバーアイコンのパスを返す（開発時・バンドル時対応）"""
+    if getattr(sys, "frozen", False):
+        base = Path(sys._MEIPASS)
+    else:
+        base = Path(__file__).parent
+    return str(base / "assets" / "menubar.png")
+
 
 # rumpsのインポート試行
 try:
@@ -34,7 +46,7 @@ try:
         _sound_item: rumps.MenuItem
 
         def __init__(self) -> None:
-            super().__init__("🎤", quit_button="終了")
+            super().__init__("", icon=_menubar_icon_path(), quit_button="終了")
             self._status_item = rumps.MenuItem("待機中...")
             # STTバックエンド表示
             backend_info = f"STT: Google Speech ({config.language})"
@@ -56,19 +68,15 @@ try:
             ]
 
         def set_recording(self) -> None:
-            self.title = "🗣️"
             self._status_item.title = "🗣️ 録音中..."
 
         def set_processing(self) -> None:
-            self.title = "👨🏻‍💻"
             self._status_item.title = "👨🏻‍💻 変換中..."
 
         def set_idle(self) -> None:
-            self.title = "🎤"
             self._status_item.title = "待機中..."
 
         def set_error(self, msg: str) -> None:
-            self.title = "⚠️"
             self._status_item.title = f"⚠️ {msg}"
 
         def toggle_sound(self, sender: rumps.MenuItem) -> None:
