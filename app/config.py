@@ -72,7 +72,7 @@ class AppConfig(BaseModel):
         default_factory=lambda: os.getenv("GEMINI_API_KEY", ""), description="Gemini API キー"
     )
     gemini_model: str = Field(
-        default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-2.0-flash-exp"),
+        default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-2.0-flash"),
         description="使用するGeminiモデル",
     )
     gemini_timeout: int = Field(default=5, ge=1, le=30, description="APIタイムアウト時間（秒）")

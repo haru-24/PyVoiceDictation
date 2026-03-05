@@ -201,16 +201,15 @@ class VoiceInputEngine:
             if self.gemini.enabled and text:
                 corrected = self.gemini.correct(text)
                 if corrected != text:
-                    logger.info(f"[Gemini補正] {text} → {corrected}")
+                    logger.info(f"[Gemini補正] {corrected}")
                 text = corrected
 
             replaced = word_replacer.apply(text)
             if replaced != text:
-                logger.info(f"[ワード変換] {text} → {replaced}")
+                logger.info(f"[ワード変換] {replaced}")
             text = replaced
 
             if text:
-                logger.info(f"[入力] {text}")
                 time.sleep(0.1)
                 type_text(text)
 

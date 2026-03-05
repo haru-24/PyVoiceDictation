@@ -1,10 +1,13 @@
 """
 Gemini APIによるテキスト補正
 """
+import logging
 import threading
 from typing import Optional, Any
 
 from app.config import config
+
+logger = logging.getLogger(__name__)
 
 
 class GeminiCorrector:
@@ -27,6 +30,12 @@ class GeminiCorrector:
                     from google import genai
                     self._client = genai.Client(api_key=config.gemini_api_key)
         return self._client
+
+    def reset_client(self) -> None:
+        """APIキー変更時にクライアントをリセット"""
+        with self._lock:
+            self._client = None
+            logger.debug("[Gemini] クライアントをリセットしました")
 
     def correct(self, text: str) -> str:
         """Whisper出力をGemini APIで補正する"""
@@ -61,5 +70,8 @@ class GeminiCorrector:
             return text
 
         except Exception as e:
-            print(f"Gemini API エラー（元のテキストを使用）: {e}")
+            logger.error(f"[Gemini] APIエラー（元のテキストを使用）: {e}")
             return text
+
+
+gemini = GeminiCorrector()

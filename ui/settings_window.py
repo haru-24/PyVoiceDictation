@@ -25,6 +25,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.config import config
+from app.gemini import gemini
 from app.word_replacement import word_replacer
 
 # ログファイルパス
@@ -132,7 +133,7 @@ class SettingsDialog(QDialog):
 
         self.model_edit = QLineEdit()
         self.model_edit.setFont(QFont("Monaco", 12))
-        self.model_edit.setPlaceholderText("例: gemini-2.0-flash-exp")
+        self.model_edit.setPlaceholderText("例: gemini-2.0-flash")
         self.model_edit.setText(config.gemini_model)
         model_layout.addWidget(self.model_edit)
         layout.addLayout(model_layout)
@@ -542,6 +543,7 @@ class SettingsDialog(QDialog):
 
         try:
             config.save_gemini_settings(api_key, model)
+            gemini.reset_client()
             if config.gemini_enabled:
                 self.gemini_status_label.setText("✅ Gemini補正: 有効")
                 self.gemini_status_label.setStyleSheet("color: #4CAF50;")
