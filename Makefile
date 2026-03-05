@@ -6,7 +6,7 @@ dev:
 	poetry run python main.py
 
 build:
-	poetry run python setup.py py2app
+	poetry run pyinstaller PyVoDictation.spec --noconfirm
 
 dist: build
 	hdiutil create \

@@ -36,7 +36,7 @@ class SettingsDialog(QDialog):
 
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle("🎤🏻 音声入力設定")
+        self.setWindowTitle("🎤 音声入力設定")
         self.setMinimumSize(900, 700)
         self._setup_ui()
 

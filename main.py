@@ -13,10 +13,11 @@ macOSの設定:
 
 使い方:
     python main.py
-    → メニューバーに🎤🏻アイコンが表示される
+    → メニューバーに🎤アイコンが表示される
     → 右Commandキーを押しながら話す → 離すとテキスト入力
 """
 
+import multiprocessing
 import time
 
 from app.config import config
@@ -37,7 +38,7 @@ try:
         _sound_item: rumps.MenuItem
 
         def __init__(self) -> None:
-            super().__init__("🎤🏻", quit_button="終了")
+            super().__init__("🎤", quit_button="終了")
             self._status_item = rumps.MenuItem("待機中...")
             # STTバックエンド表示
             if config.stt_backend == "google":
@@ -70,7 +71,7 @@ try:
             self._status_item.title = "👨🏻‍💻 変換中..."
 
         def set_idle(self) -> None:
-            self.title = "🎤🏻"
+            self.title = "🎤"
             self._status_item.title = "待機中..."
 
         def set_error(self, msg: str) -> None:
@@ -126,4 +127,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()  # PyInstallerバンドル時に必須
     main()
