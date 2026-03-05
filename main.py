@@ -1,11 +1,8 @@
 """
 Mac用 Push-to-Talk 音声入力ツール
 ==================================
-右Commandキーを押している間だけ録音し、離すとWhisperで文字起こしして
+右Commandキーを押している間だけ録音し、離すとGoogle Speech Recognitionで文字起こしして
 アクティブなウィンドウ（ターミナル、Claude Code等）にテキスト入力する。
-
-セットアップ:
-    pip install faster-whisper sounddevice numpy pynput rumps pyobjc-framework-Cocoa pydantic
 
 macOSの設定:
     システム設定 → プライバシーとセキュリティ → アクセシビリティ
@@ -25,7 +22,6 @@ from app.engine import VoiceInputEngine
 from app.gemini import GeminiCorrector
 from app.google_speech import GoogleSpeechTranscriber
 from app.settings import SettingsWindow
-from app.whisper import WhisperTranscriber
 
 # rumpsのインポート試行
 try:
@@ -41,10 +37,7 @@ try:
             super().__init__("🎤", quit_button="終了")
             self._status_item = rumps.MenuItem("待機中...")
             # STTバックエンド表示
-            if config.stt_backend == "google":
-                backend_info = f"STT: Google Speech ({config.language})"
-            else:
-                backend_info = f"STT: Whisper ({config.whisper_model})"
+            backend_info = f"STT: Google Speech ({config.language})"
 
             # サウンド設定メニュー項目
             self._sound_item = rumps.MenuItem("🔊 サウンド", callback=self.toggle_sound)
@@ -99,14 +92,7 @@ except ImportError:
 
 def main() -> None:
     """メイン関数"""
-    # STTバックエンドの選択
-    if config.stt_backend == "google":
-        print("[STT] Google Speech Recognition を使用")
-        transcriber = GoogleSpeechTranscriber()
-    else:
-        print(f"[STT] Whisper ({config.whisper_model}) を使用")
-        transcriber = WhisperTranscriber()
-
+    transcriber = GoogleSpeechTranscriber()
     transcriber.load()
     gemini = GeminiCorrector()
 

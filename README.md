@@ -1,4 +1,4 @@
-# PyVoDictation
+# PyVoiceDictation
 
 macOS 用 Push-to-Talk 音声入力ツール。
 右 Command キーを押している間だけ録音し、離すと音声をテキストに変換してアクティブなウィンドウへ自動入力します。

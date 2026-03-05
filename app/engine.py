@@ -7,7 +7,7 @@ import threading
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, List, Any, Union
+from typing import Optional, List, Any
 
 import numpy as np
 import numpy.typing as npt
@@ -22,7 +22,6 @@ from Quartz.CoreGraphics import (
 )
 
 from app.config import config
-from app.whisper import WhisperTranscriber
 from app.google_speech import GoogleSpeechTranscriber
 from app.gemini import GeminiCorrector
 from app.word_replacement import word_replacer
@@ -96,11 +95,11 @@ class VoiceInputEngine:
 
     def __init__(
         self,
-        whisper: Union[WhisperTranscriber, GoogleSpeechTranscriber],
+        transcriber: GoogleSpeechTranscriber,
         gemini: GeminiCorrector,
         app: Optional[Any] = None,
     ) -> None:
-        self.whisper = whisper
+        self.whisper = transcriber
         self.gemini = gemini
         self.app = app
         self.is_recording: bool = False

@@ -9,7 +9,7 @@ import threading
 from pathlib import Path
 
 from dotenv import load_dotenv, set_key
-from pydantic import BaseModel, Field, PrivateAttr, field_validator
+from pydantic import BaseModel, Field, PrivateAttr
 from pynput.keyboard import Key
 
 
@@ -50,20 +50,6 @@ class AppConfig(BaseModel):
     hotkey: Key = Field(default=Key.cmd_r, description="録音用ホットキー")
     sample_rate: int = Field(default=16000, ge=8000, le=48000, description="サンプリングレート")
 
-    # STT バックエンド設定
-    stt_backend: str = Field(
-        default_factory=lambda: os.getenv("STT_BACKEND", "google"),
-        description="STTバックエンド (whisper|google)",
-    )
-
-    # Whisper 設定
-    whisper_model: str = Field(default="medium", description="Whisperモデル")
-    whisper_compute_type: str = Field(default="float32", description="Whisper計算精度")
-    whisper_initial_prompt: str = Field(
-        default="Python、JavaScript、TypeScript、Docker、Git、SSH、API、JSON、React、Vue、Node.js、AWS、GitHub、VS Code",
-        description="Whisperの認識ヒント用プロンプト",
-    )
-
     language: str = Field(default="ja", description="言語")
     min_duration: float = Field(default=0.3, ge=0.1, description="最小録音時間（秒）")
 
@@ -95,22 +81,6 @@ class AppConfig(BaseModel):
     def gemini_enabled(self) -> bool:
         """Gemini補正機能の有効/無効（APIキーとモデルが両方設定されていれば有効）"""
         return bool(self.gemini_api_key) and bool(self.gemini_model)
-
-    @field_validator("stt_backend")
-    @classmethod
-    def validate_stt_backend(cls, v: str) -> str:
-        valid_backends = ["whisper", "google"]
-        if v not in valid_backends:
-            raise ValueError(f"STTバックエンドは {valid_backends} のいずれかである必要があります")
-        return v
-
-    @field_validator("whisper_model")
-    @classmethod
-    def validate_model(cls, v: str) -> str:
-        valid_models = ["tiny", "base", "small", "medium", "large-v3"]
-        if v not in valid_models:
-            raise ValueError(f"モデルは {valid_models} のいずれかである必要があります")
-        return v
 
     def model_post_init(self, _context) -> None:
         """モデル初期化後の処理"""
