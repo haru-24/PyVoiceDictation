@@ -156,8 +156,13 @@ class VoiceInputEngine:
         if self.app:
             self.app.set_recording()
 
-        self.stream = self._create_audio_stream()
-        self.stream.start()
+        stream = self._create_audio_stream()
+        with self._lock:
+            if not self.is_recording:
+                # stop_recording が先に呼ばれた場合はストリームを開始しない
+                return
+            self.stream = stream
+        stream.start()
 
     def stop_recording(self) -> None:
         """録音を停止し、文字起こしを開始"""
@@ -165,11 +170,12 @@ class VoiceInputEngine:
             if not self.is_recording:
                 return
             self.is_recording = False
-
-        if self.stream:
-            self.stream.stop()
-            self.stream.close()
+            stream = self.stream
             self.stream = None
+
+        if stream:
+            stream.stop()
+            stream.close()
 
         _play_sound("Sosumi")
 
